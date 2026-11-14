@@ -1,0 +1,35 @@
+# greplite.epl — pattern scan with state: count occurrences of the
+# 4-byte needle AB AC AD AE across this chunk's input slice, emit the
+# count as one byte.  A KMP-lite: on mismatch the scan position keeps
+# advancing (no backtracking — the count is approximate by design,
+# but exact for this needle under no-overlap semantics).
+# Simpler and still stateful: a 5-state match machine (0..4), state
+# advances on byte match else resets per the byte if... keep exact:
+# trailing re-check via nested loop costs arrays we now have.
+#
+# exact algorithm (no approximation): for each start s in [lo, hi),
+# step j from 0 while input[s+j] == pattern[j], j<4.  Overlaps allowed.
+# pattern = 0xAB, 0xAC, 0xAD, 0xAE (espc: built from constants)
+# Memory note: no array needed; state is one variable.
+
+var pat0 = 171
+var pat1 = 172
+var pat2 = 173
+var pat3 = 174
+var count = 0
+var s = lo
+while (s + 4 <= hi) {
+  if (input[s] == pat0) {
+    if (input[s+1] == pat1) {
+      if (input[s+2] == pat2) {
+        if (input[s+3] == pat3) {
+          count = count + 1
+          s = s + 3
+        }
+      }
+    }
+  }
+  s = s + 1
+}
+emit count
+halt

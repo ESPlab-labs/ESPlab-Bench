@@ -1,0 +1,34 @@
+name: bench (upstream main)
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"   # Mondays 05:00 UTC
+  workflow_dispatch:
+
+# Keep the scorecard honest against ESPlab development. Correctness
+# failures here are real signals: an upstream VM or espc change broke a
+# bench task, and the numbers may already be stale.
+
+jobs:
+  bench-upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout ESPlab main
+        run: |
+          git clone --depth 1 https://github.com/ESPlab-labs/ESPlab.git esplab
+
+      - name: Build ESPlab tools
+        run: make -C esplab
+
+      - name: Run the benchmark
+        run: ./bench.py
+        env:
+          ESPLAB_DIR: ${{ github.workspace }}/esplab
+
+      - name: Upload scorecard
+        uses: actions/upload-artifact@v4
+        with:
+          name: scorecard-upstream
+          path: build/results.json

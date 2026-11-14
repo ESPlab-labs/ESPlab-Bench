@@ -1,0 +1,35 @@
+name: bench
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout pinned ESPlab
+        run: |
+          git clone --depth 1 --branch "${ESPLAB_REF}" \
+            https://github.com/ESPlab-labs/ESPlab.git esplab
+        env:
+          # the VM + espc the scorecard was produced against
+          ESPLAB_REF: v0.4.0
+
+      - name: Build ESPlab tools
+        run: make -C esplab
+
+      - name: Run the benchmark
+        run: ./bench.py
+        env:
+          ESPLAB_DIR: ${{ github.workspace }}/esplab
+
+      - name: Upload scorecard
+        uses: actions/upload-artifact@v4
+        with:
+          name: scorecard
+          path: build/results.json

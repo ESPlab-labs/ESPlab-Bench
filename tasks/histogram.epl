@@ -1,0 +1,15 @@
+# histogram.epl — byte-value frequency histogram of this chunk's input
+# slice, 64 buckets (value mod 64).  Emits 64 bytes, bucket 0 first.
+# The workload that arrays (var h[64]) exist for: table-driven, the
+# shape espc could not express before v0.4.
+
+var h[64]
+var i = lo
+while (i < hi) {
+  h[input[i] % 64] = h[input[i] % 64] + 1
+  i = i + 1
+}
+for b in 0..63 {
+  emit h[b] & 255
+}
+halt

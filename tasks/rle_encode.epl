@@ -1,0 +1,35 @@
+# rle_encode.epl — run-length encode this chunk's input slice with the
+# same codec ESP On Demand uses for video frames: emit (count, value)
+# pairs where run length = (count >> 1) + 1, so count = (run - 1) << 1.
+# Maximum run is 128 bytes (count is one byte).  Emits pairs for the
+# whole slice.
+#
+# emitting "i = hi + 999999" style break-out is not expressible; the
+# run-scan uses an inner while with a sentinel variable.
+
+var i = lo
+while (i < hi) {
+  var v = input[i]
+  var run = 1
+  i = i + 1
+  var scan = 1
+  while (scan == 1) {
+    if (i < hi) {
+      if (input[i] == v) {
+        if (run < 128) {
+          run = run + 1
+          i = i + 1
+        } else {
+          scan = 0
+        }
+      } else {
+        scan = 0
+      }
+    } else {
+      scan = 0
+    }
+  }
+  emit (run - 1) * 2
+  emit v
+}
+halt

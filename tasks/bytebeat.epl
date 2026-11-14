@@ -1,0 +1,9 @@
+# bytebeat.epl — formula music, the classic t*(42 & t>>10) melody.
+# One output byte per t in this chunk's slice [lo, hi).
+
+var t = lo
+while (t < hi) {
+  emit (t * (42 & (t >> 10))) & 255
+  t = t + 1
+}
+halt

@@ -1,0 +1,41 @@
+# mandelbrot.epl — fixed-point Mandelbrot membership test for this
+# chunk's slice of a 64x64 grid, Q12 fixed point, byte per pixel =
+# iterations to escape (0 when in the set).  The chunk input is
+# ignored; lo/hi address the pixel range:
+#   cx = (p % 64) * 192 - 6144   (Q12: col * 0.046875 - 1.5)
+#   cy = (p / 64) * 192 - 4608   (Q12: row * 0.046875 - 1.125)
+# x/y/it live in registers across the whole inner loop, so the
+# col/row/cx/cy setup recomputes from p each pass.
+
+var p = lo
+var x = 0
+var y = 0
+var it = 0
+
+while (p < hi) {
+  var cx = (p % 64) * 192 - 6144
+  var cy = (p / 64) * 192 - 4608
+  x = 0
+  y = 0
+  it = 0
+  while (it < 25) {
+    var x2 = x * x / 4096
+    var y2 = y * y / 4096
+    if (x2 + y2 > 16384) {
+      it = it + 26
+    } else {
+      var xy = x * y / 2048
+      x = x2 - y2 + cx
+      y = xy + cy
+      it = it + 1
+    }
+  }
+  if (it > 25) {
+    it = it - 26
+  } else {
+    it = 25 - it
+  }
+  emit it
+  p = p + 1
+}
+halt

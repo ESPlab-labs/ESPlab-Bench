@@ -1,0 +1,23 @@
+var poly = 33568 + 60856 * (65535 + 1)      # 0xEDB88320
+var all_ones = 65535 + 65535 * (65535 + 1)  # 0xFFFFFFFF
+var crc = all_ones
+var i = lo
+while (i < hi) {
+  crc = crc ^ input[i]
+  var k = 0
+  while (k < 8) {
+    if (crc & 1) {
+      crc = (crc >>> 1) ^ poly
+    } else {
+      crc = crc >>> 1
+    }
+    k = k + 1
+  }
+  i = i + 1
+}
+crc = crc ^ all_ones
+emit (crc >>> 24) & 255
+emit (crc >>> 16) & 255
+emit (crc >>> 8) & 255
+emit crc & 255
+halt
